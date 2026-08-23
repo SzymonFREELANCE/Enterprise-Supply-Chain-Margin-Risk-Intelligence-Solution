@@ -1,7 +1,0 @@
-role Regional_Europe
-	modelPermission: read
-
-	tablePermission Dim_Geography = [Order Region] IN { "Western Europe", "Southern Europe", "Eastern Europe", "Northern Europe" }
-
-	annotation PBI_Id = 10cfdc1170fa4ad29a9e4ce3157451ae
-

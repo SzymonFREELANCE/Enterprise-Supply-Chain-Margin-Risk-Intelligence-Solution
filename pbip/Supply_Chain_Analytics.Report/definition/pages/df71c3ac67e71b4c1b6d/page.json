@@ -1,8 +1,0 @@
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
-  "name": "df71c3ac67e71b4c1b6d",
-  "displayName": "Risk & Fraud",
-  "displayOption": "FitToPage",
-  "height": 720,
-  "width": 1280
-}

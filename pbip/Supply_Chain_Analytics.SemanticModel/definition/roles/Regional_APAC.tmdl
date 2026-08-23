@@ -1,7 +1,0 @@
-role Regional_APAC
-	modelPermission: read
-
-	tablePermission Dim_Geography = [Order Region] IN { "South Asia", "Southeast Asia", "Eastern Asia", "West Asia", "Oceania", "Central Asia" }
-
-	annotation PBI_Id = 2265c260190047d2a3e13cdfc923fd98
-
