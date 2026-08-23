@@ -111,18 +111,20 @@ The underlying storage layer was engineered using an ELT/ETL pattern with a clea
 
   ---
 
-  ## 🧪 Data Quality & Automated Reconciliation Audit
+## 🧪 Data Quality & Automated Reconciliation Audit
 
-To ensure mathematical consistency and verify zero data loss across transformations, an automated audit script was implemented (sql/03_data_quality_reconciliation.sql).
-  DWH Layer / Entity Name,Physical Table / View,Row Count,Status
-Raw Ingestion Layer,raw.staging_dataco,"180,519",100% Reconciled
-Core Fact Table,core.fact_order_items,"180,519",100% Zero-Loss
-Core Dimension: Customers,core.dim_customers,"20,652",Deduplicated
-Core Dimension: Products,core.dim_products,118,Conformed
-Core Dimension: Geography,core.dim_geography,"3,773",Normalized
-Analytics Mart: Sales & Margin,analytics.v_sales_margin_analysis,"180,519",Validated
-Analytics Mart: Supply Chain,analytics.v_supply_chain_logistics,"180,519",Validated
-Analytics Mart: Risk & Fraud,analytics.v_risk_fraud_monitoring,"4,062",Target Filtered
+To ensure mathematical consistency and verify zero data loss across transformations, an automated audit script was implemented ([sql/03_data_quality_reconciliation.sql](sql/03_data_quality_reconciliation.sql)).
+
+| DWH Layer / Entity Name | Physical Table / View | Row Count | Status |
+| :--- | :--- | :---: | :---: |
+| **Raw Ingestion Layer** | `raw.staging_dataco` | **180,519** | `100% Reconciled` |
+| **Core Fact Table** | `core.fact_order_items` | **180,519** | `100% Zero-Loss` |
+| **Core Dimension: Customers** | `core.dim_customers` | **20,652** | `Deduplicated` |
+| **Core Dimension: Products** | `core.dim_products` | **118** | `Conformed` |
+| **Core Dimension: Geography** | `core.dim_geography` | **3,773** | `Normalized` |
+| **Analytics Mart: Sales & Margin** | `analytics.v_sales_margin_analysis` | **180,519** | `Validated` |
+| **Analytics Mart: Supply Chain** | `analytics.v_supply_chain_logistics` | **180,519** | `Validated` |
+| **Analytics Mart: Risk & Fraud** | `analytics.v_risk_fraud_monitoring` | **4,062** | `Target Filtered` |
 
 ---
 
