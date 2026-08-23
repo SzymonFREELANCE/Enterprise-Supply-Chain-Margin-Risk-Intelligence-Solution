@@ -1,0 +1,109 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 221.21416079729457,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1327.2212324138645,
+            "y": 814.44197425650509
+          },
+          "nodeIndex": "Dim_Calendar",
+          "nodeLineageTag": "4cfd4901-aca4-44d2-b8ff-b47c2c903d0a",
+          "size": {
+            "height": 254.02697925009511,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 767.800177841636,
+            "y": 0
+          },
+          "nodeIndex": "_Measures",
+          "nodeLineageTag": "7c0cb5a3-6755-4043-b5d9-c6bbf6696ada",
+          "size": {
+            "height": 72,
+            "width": 234
+          },
+          "zIndex": 5,
+          "expandedHeight": 200.79059721773297
+        },
+        {
+          "location": {
+            "x": 1592.3433156889237,
+            "y": 0
+          },
+          "nodeIndex": "Dim_Customers",
+          "size": {
+            "height": 319.95866350306119,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 1024.0206338202834,
+            "y": 518.02563017212674
+          },
+          "nodeIndex": "Dim_Products",
+          "size": {
+            "height": 283.27466517791117,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 1032.5570013969959,
+            "y": 0
+          },
+          "nodeIndex": "Dim_Geography",
+          "size": {
+            "height": 233.86533203067228,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 1584.8465418495377,
+            "y": 592.539517387677
+          },
+          "nodeIndex": "Dim_Shipping",
+          "size": {
+            "height": 181.29418627077689,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 1318.0538808926997,
+            "y": 74.361812331551064
+          },
+          "nodeIndex": "Fact_Order_Items",
+          "size": {
+            "height": 648.10528736800666,
+            "width": 234
+          },
+          "zIndex": 4
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 63.287087723234123,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

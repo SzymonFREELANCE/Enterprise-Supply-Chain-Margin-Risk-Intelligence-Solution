@@ -1,0 +1,296 @@
+table Fact_Order_Items
+	isHidden
+	lineageTag: 514cd3df-c39e-431f-9ff4-eb9a44d95090
+
+	column order_item_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8027e78f-bd14-411f-90ce-99fd97682d2f
+		summarizeBy: sum
+		sourceColumn: order_item_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5e60d08e-0171-4ab5-9940-e8b4bccfc2fd
+		summarizeBy: sum
+		sourceColumn: order_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_date
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: de5399df-7641-44ca-a98d-b2778c805a79
+		summarizeBy: none
+		sourceColumn: order_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column shipping_date
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 7d4b204e-5a75-4055-961f-c078686e4ea6
+		summarizeBy: none
+		sourceColumn: shipping_date
+
+		variation Variation
+			isDefault
+			relationship: 6f7e9f25-4e4f-4874-9218-39fd19f0911b
+			defaultHierarchy: LocalDateTable_fc12a9c1-4f61-4fb2-8298-02497a018a98.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a6d736bb-2c14-475d-b943-6e1d2800ec88
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 762e70c8-389c-47fb-832c-35e4e7cf9046
+		summarizeBy: none
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column geo_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9c3c5e63-f0ba-451f-9fea-85c8755c0309
+		summarizeBy: none
+		sourceColumn: geo_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column shipping_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8727d066-3eac-4030-b8a7-09d9756d9863
+		summarizeBy: none
+		sourceColumn: shipping_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_type
+		dataType: string
+		isHidden
+		lineageTag: d1635150-51c6-4df3-b461-cc42c75a1967
+		summarizeBy: none
+		sourceColumn: payment_type
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status
+		dataType: string
+		isHidden
+		lineageTag: 60f6ecc0-06d1-46a0-9ee7-b8e842799da6
+		summarizeBy: none
+		sourceColumn: order_status
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column days_for_shipping_real
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e12dbfe2-16bc-489d-b84c-1515d1290cf8
+		summarizeBy: sum
+		sourceColumn: days_for_shipping_real
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column days_for_shipment_scheduled
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 33608d4a-af76-4e48-a9a4-15bd01b8a93a
+		summarizeBy: sum
+		sourceColumn: days_for_shipment_scheduled
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_item_quantity
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 63b32454-c927-40ce-9be6-4960cd07c921
+		summarizeBy: sum
+		sourceColumn: order_item_quantity
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_price
+		dataType: double
+		isHidden
+		lineageTag: 4b7c2beb-8d45-425c-a512-ae767b2ec2bf
+		summarizeBy: sum
+		sourceColumn: product_price
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column sales_gross
+		dataType: double
+		isHidden
+		lineageTag: 8ea25892-f7d1-43ed-8825-e52c4565f162
+		summarizeBy: sum
+		sourceColumn: sales_gross
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column discount_amount
+		dataType: double
+		isHidden
+		lineageTag: 00803847-8f99-482f-afb9-2e857ebf0a6c
+		summarizeBy: sum
+		sourceColumn: discount_amount
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column discount_rate
+		dataType: double
+		isHidden
+		lineageTag: 2e3af11e-0aef-43c9-842c-a576dbf23da1
+		summarizeBy: sum
+		sourceColumn: discount_rate
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column sales_net
+		dataType: double
+		isHidden
+		lineageTag: c937d7a1-da8b-4f48-bb34-267e0ce508a0
+		summarizeBy: sum
+		sourceColumn: sales_net
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column profit_margin
+		dataType: double
+		isHidden
+		lineageTag: d5d1b0dd-c360-447b-b823-00aebe30b415
+		summarizeBy: sum
+		sourceColumn: profit_margin
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column profit_ratio
+		dataType: double
+		isHidden
+		lineageTag: 7c579e98-93fc-4446-85ce-751612492b1a
+		summarizeBy: sum
+		sourceColumn: profit_ratio
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column is_unprofitable
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a14b5d9d-81d4-43c6-a2bd-6b4f6e193580
+		summarizeBy: none
+		sourceColumn: is_unprofitable
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_fraud
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: cbaacb15-d5e0-4437-a587-fbd54363ebb8
+		summarizeBy: none
+		sourceColumn: is_fraud
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fact_Order_Items = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database(DB_Server, DB_Name),
+				  #"Navigation 1" = Source{[Schema = "core", Item = "fact_order_items"]}[Data],
+				    #"Changed Type" = Table.TransformColumnTypes(#"Navigation 1",{{"order_date", type date}})
+				in
+				  #"Changed Type"
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

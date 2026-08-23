@@ -1,0 +1,12 @@
+role Regional_Americas
+	modelPermission: read
+
+	tablePermission Dim_Geography = ```
+			[Order Region] IN { 
+			    "Central America", "South America", "West of USA", 
+			    "East of USA", "US Center", "South of USA", "Canada", "Caribbean" 
+			}
+			```
+
+	annotation PBI_Id = 7b49c2f571f248d89ef6b00e69ed2417
+

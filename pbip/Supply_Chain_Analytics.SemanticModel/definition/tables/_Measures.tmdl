@@ -1,0 +1,853 @@
+table _Measures
+	lineageTag: 7c0cb5a3-6755-4043-b5d9-c6bbf6696ada
+
+	measure 'Total Sales' = SUM('Fact_Order_Items'[sales_gross])
+		formatString: \$#,0.0;(\$#,0.0);\$#,0.0
+		displayFolder: 01 Base Measures
+		lineageTag: 00dee682-3a53-4577-bff6-369988ecedf7
+
+	measure 'Total Profit' = SUM('Fact_Order_Items'[profit_margin])
+		formatString: \$#,0.0;(\$#,0.0);\$#,0.0
+		displayFolder: 01 Base Measures
+		lineageTag: 0bbe61e9-119a-41dc-8d5a-44d35487fd4d
+
+	measure 'Profit Margin %' = DIVIDE([Total Profit], [Total Sales], 0)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Base Measures
+		lineageTag: ab38055c-8a5e-48fe-8567-551096606de4
+
+	measure 'Unprofitable Orders Count' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT('Fact_Order_Items'[order_id]),
+			    'Fact_Order_Items'[is_unprofitable] = TRUE()
+			)
+		formatString: #,0
+		displayFolder: 01 Base Measures
+		lineageTag: aef12ea9-e657-4617-a7fd-94bef21d21b4
+
+	measure 'Late Delivery Rate %' =
+			
+			DIVIDE(
+			    CALCULATE(DISTINCTCOUNT('Fact_Order_Items'[order_id]), 'Dim_Shipping'[Delivery Status] = "Late delivery"),
+			    DISTINCTCOUNT('Fact_Order_Items'[order_id]),
+			    0
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Base Measures
+		lineageTag: e586c8c5-d09a-45be-b818-f2a3abce7b6e
+
+	measure 'Avg Real Shipping Days' = AVERAGE('Fact_Order_Items'[days_for_shipping_real])
+		formatString: 0.0
+		displayFolder: 01 Base Measures
+		lineageTag: 0895c4d6-308d-49e0-8335-e9172c28744a
+
+	measure 'Avg Scheduled Shipping Days' = AVERAGE('Fact_Order_Items'[days_for_shipment_scheduled])
+		formatString: 0.0
+		displayFolder: 01 Base Measures
+		lineageTag: 1ef15eaa-9797-4a7d-9e8a-1c9451b508cc
+
+	measure 'Fraud Orders Count' =
+			
+			CALCULATE(
+			    COUNTROWS('Fact_Order_Items'),
+			    'Fact_Order_Items'[is_fraud] = TRUE()
+			)
+		formatString: #,0
+		displayFolder: 01 Base Measures
+		lineageTag: e139ab00-feb8-41a7-9ca5-c817b05329bd
+
+	measure 'Fraud Sales' =
+			
+			CALCULATE(
+			    SUM('Fact_Order_Items'[sales_gross]),
+			    'Fact_Order_Items'[is_fraud] = TRUE()
+			)
+		formatString: \$#,0.0;(\$#,0.0);\$#,0.0
+		displayFolder: 01 Base Measures
+		lineageTag: eb65634a-225c-4ae5-bee8-12d51f62e417
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'Avg Fraud Order Value' =
+			
+			DIVIDE([Fraud Sales], [Fraud Orders Count], 0)
+		formatString: \$#,0.0;(\$#,0.0);\$#,0.0
+		displayFolder: 01 Base Measures
+		lineageTag: 2cebf8cd-d708-4e6e-ad6f-1a22d891cd26
+
+	measure 'Avg Discount %' = AVERAGE('Fact_Order_Items'[discount_rate])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 01 Base Measures
+		lineageTag: 593c324d-0b35-40e0-be08-c249b9a2e3c1
+
+	measure 'Top Fraud Channel' =
+			
+			CALCULATE(
+			    SELECTEDVALUE('Fact_Order_Items'[payment_type], "TRANSFER"),
+			    'Fact_Order_Items'[is_fraud] = TRUE()
+			)
+		displayFolder: 05 Top N & Ranking
+		lineageTag: b15d238a-f136-40cb-bd35-ea257a71108a
+
+	measure 'Data Period Label' = ```
+			
+			"Data Period: " & 
+			FORMAT(MIN('Fact_Order_Items'[order_date]), "mmm yyyy", "en-US") & 
+			" - " & 
+			FORMAT(MAX('Fact_Order_Items'[order_date]), "mmm yyyy", "en-US")
+			```
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: e1d2706a-4f77-4d72-9ae1-aa9b200d6857
+
+	measure 'Total Sales YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Total Sales],
+			        CALCULATE([Total Sales], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Total Sales], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Total Sales], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: 4223f720-968d-4e5a-99fe-782a032b7d63
+
+	measure 'Total Sales Color' =
+			
+			VAR YoYText = [Total Sales YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#2CCE2C",
+			        CONTAINSSTRING(YoYText, "▼"), "#E63946",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: 02525737-5624-4ecf-995c-b2c0486e44ec
+
+	measure 'Total Profit YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Total Profit],
+			        CALCULATE([Total Profit], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Total Profit], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Total Profit], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: 9654f2cc-e6ba-4c0f-b589-f27e582faaad
+
+	measure 'Total Profit Color' =
+			
+			VAR YoYText = [Total Profit YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#2CCE2C",
+			        CONTAINSSTRING(YoYText, "▼"), "#E63946",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: e47133bf-0589-4c7e-a4c5-470723cf4d41
+
+	measure 'Profit Margin % YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Profit Margin %],
+			        CALCULATE([Profit Margin %], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Profit Margin %], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Profit Margin %], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: ddcdbddf-72fb-4bdd-bff7-ff6809af5e9b
+
+	measure 'Profit Margin % Color' =
+			
+			VAR YoYText = [Profit Margin % YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#2CCE2C",
+			        CONTAINSSTRING(YoYText, "▼"), "#E63946",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: a6cc9304-b476-45ec-b37f-f0b7a3c63bc7
+
+	measure 'Unprofitable Orders Count YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Unprofitable Orders Count],
+			        CALCULATE([Unprofitable Orders Count], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Unprofitable Orders Count], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Unprofitable Orders Count], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: 604e497f-34f1-48a0-b580-65626af05fde
+
+	measure 'Unprofitable Orders Count Color' =
+			
+			VAR YoYText = [Unprofitable Orders Count YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#E63946",
+			        CONTAINSSTRING(YoYText, "▼"), "#2CCE2C",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: 9b05abd7-fdf6-45a7-ac1c-49998426f82d
+
+	measure 'Avg Scheduled Shipping Days YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Avg Scheduled Shipping Days],
+			        CALCULATE([Avg Scheduled Shipping Days], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Avg Scheduled Shipping Days], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Avg Scheduled Shipping Days], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: 2d75ae92-ac59-4081-b896-5887d9f45cac
+
+	measure 'Avg Scheduled Shipping Days Color' =
+			
+			VAR YoYText = [Avg Scheduled Shipping Days YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#E63946",
+			        CONTAINSSTRING(YoYText, "▼"), "#2CCE2C",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: 7c488bbf-77d9-45e9-92d8-1eca791a1eb1
+
+	measure 'Avg Real Shipping Days YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Avg Real Shipping Days],
+			        CALCULATE([Avg Real Shipping Days], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Avg Real Shipping Days], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Avg Real Shipping Days], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: 5bd178fe-71e4-49ef-8428-6f3391c508f4
+
+	measure 'Avg Real Shipping Days Color' =
+			
+			VAR YoYText = [Avg Real Shipping Days YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#E63946",
+			        CONTAINSSTRING(YoYText, "▼"), "#2CCE2C",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: 4c203051-3847-4dd6-a9f1-ec041552a731
+
+	measure 'Late Delivery Rate % YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Late Delivery Rate %],
+			        CALCULATE([Late Delivery Rate %], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Late Delivery Rate %], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Late Delivery Rate %], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: 84da1230-2b31-4cc4-849f-e0fb157308c9
+
+	measure 'Late Delivery Rate % Color' =
+			
+			VAR YoYText = [Late Delivery Rate % YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#E63946",
+			        CONTAINSSTRING(YoYText, "▼"), "#2CCE2C",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: da241d4b-ed76-411f-ab5a-07c4c567853c
+
+	measure 'Fraud Orders Count YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Fraud Orders Count],
+			        CALCULATE([Fraud Orders Count], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Fraud Orders Count], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Fraud Orders Count], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: ddd6480f-7ab3-418a-b40a-0543eaca7aae
+
+	measure 'Fraud Orders Count Color' =
+			
+			VAR YoYText = [Fraud Orders Count YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#E63946",
+			        CONTAINSSTRING(YoYText, "▼"), "#2CCE2C",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: 6cd2cf44-57ae-4ac7-8d1b-b65fd4d85ff1
+
+	measure 'Fraud Sales YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Fraud Sales],
+			        CALCULATE([Fraud Sales], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Fraud Sales], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Fraud Sales], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: 2e537f9d-b850-4c39-8937-93eed6be1637
+
+	measure 'Fraud Sales Color' =
+			
+			VAR YoYText = [Fraud Sales YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#E63946",
+			        CONTAINSSTRING(YoYText, "▼"), "#2CCE2C",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: bfd609d3-258f-4004-9134-eac01ba182f7
+
+	measure 'Avg Fraud Order Value YoY Formatted' = ```
+			
+			VAR IsYearFiltered = HASONEVALUE('Dim_Calendar'[Year])
+			VAR MaxSalesDate = MAX('Fact_Order_Items'[order_date])
+			VAR CurrentYear = YEAR(MaxSalesDate)
+			
+			VAR CurrentVal = 
+			    IF(
+			        IsYearFiltered,
+			        [Avg Fraud Order Value],
+			        CALCULATE([Avg Fraud Order Value], 'Dim_Calendar'[Year] = CurrentYear)
+			    )
+			
+			VAR PreviousVal = 
+			    IF(
+			        IsYearFiltered,
+			        CALCULATE([Avg Fraud Order Value], SAMEPERIODLASTYEAR('Dim_Calendar'[Date])),
+			        CALCULATE([Avg Fraud Order Value], 'Dim_Calendar'[Year] = CurrentYear - 1)
+			    )
+			
+			VAR YoY = DIVIDE(CurrentVal - PreviousVal, PreviousVal, BLANK())
+			VAR YearLabel = IF(NOT IsYearFiltered, " (" & CurrentYear & " vs " & (CurrentYear - 1) & ")", " YoY")
+			
+			RETURN
+			IF(
+			    ISBLANK(YoY),
+			    "",
+			    SWITCH(
+			        TRUE(),
+			        ABS(YoY) < 0.0005, "► 0.0%" & YearLabel,
+			        YoY > 0, "▲ " & FORMAT(YoY, "0.0%", "en-US") & YearLabel,
+			        "▼ " & FORMAT(ABS(YoY), "0.0%", "en-US") & YearLabel
+			    )
+			)
+			```
+		displayFolder: 02 Time Intelligence (YoY)
+		lineageTag: 90cd6981-85d6-4bad-a8db-d56acd8a37b7
+
+	measure 'Avg Fraud Order Value Color' =
+			
+			VAR YoYText = [Avg Fraud Order Value YoY Formatted]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        CONTAINSSTRING(YoYText, "►"), "#6B7280",
+			        CONTAINSSTRING(YoYText, "▲"), "#E63946",
+			        CONTAINSSTRING(YoYText, "▼"), "#2CCE2C",
+			        "#6B7280"
+			    )
+		displayFolder: 04 Formatting & Colors
+		lineageTag: 01c59944-c4a6-4bb6-856d-fd4b7e17f977
+
+	measure 'Unprofitable Orders Count by Category Name Accent' = ```
+			
+			VAR MaxRevenueInContext = 
+			    CALCULATE(
+			        MAXX(
+			            VALUES('Dim_Products'[Category Name]), 
+			            [Unprofitable Orders Count]
+			        ), 
+			        ALLSELECTED('Dim_Products')
+			    )
+			VAR CurrentCategoryRevenue = [Unprofitable Orders Count]
+			RETURN 
+			    IF(
+			        CurrentCategoryRevenue = MaxRevenueInContext, 
+			        "#009999",
+			        "#314F62"
+			    )
+			```
+		displayFolder: 04 Formatting & Colors
+		lineageTag: 8ac7d35b-fb1b-4162-8fd2-f6e072d987c4
+
+	measure 'Margin Pct Text' =
+			
+			FORMAT([Profit Margin %], "0.0%", "en-US")
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: a0e2e030-0a28-47ae-a382-2c49ee3925ed
+
+	measure 'Unprofitable Orders K Text' =
+			
+			FORMAT([Unprofitable Orders Count] / 1000, "#,##0.0K", "en-US")
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: 3de7f7b3-e91f-4ff6-bab2-1c8631b24f4c
+
+	measure 'Top Loss Category Name' =
+			
+			IF(
+			    ISFILTERED(Dim_Products[Category Name]),
+			    SELECTEDVALUE(Dim_Products[Category Name]),
+			    TOPN(1, VALUES(Dim_Products[Category Name]), [Unprofitable Orders Count], DESC)
+			)
+		displayFolder: 05 Top N & Ranking
+		lineageTag: eb3a2166-cd63-40d8-871a-6c5aedee8010
+
+	measure 'Top Loss Category Orders K Text' = ```
+			
+			VAR TopCat = [Top Loss Category Name]
+			VAR OrdersCount = 
+			    CALCULATE(
+			        [Unprofitable Orders Count],
+			        Dim_Products[Category Name] = TopCat
+			    )
+			RETURN
+			    FORMAT(OrdersCount / 1000, "#,##0.0K", "en-US")
+			```
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: 7b285753-8ece-4e03-b6b8-3209f4f16986
+
+	measure 'Avg Discount Pct Text' =
+			
+			FORMAT([Avg Discount %], "0.0%", "en-US")
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: d595c8d8-7605-46de-85db-fdf5ca3c66e4
+
+	measure 'Sales Dynamic Text' =
+			
+			VAR Val = [Total Sales]
+			RETURN
+			SWITCH(
+			    TRUE(),
+			    Val >= 1000000, FORMAT(Val / 1000000, "$#,##0.0M", "en-US"),
+			    Val >= 1000, FORMAT(Val / 1000, "$#,##0.0K", "en-US"),
+			    FORMAT(Val, "$#,##0", "en-US")
+			)
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: 07b019f0-b5b6-405c-9af9-95a62653ade0
+
+	measure 'Late Delivery Rate Text' =
+			
+			FORMAT([Late Delivery Rate %], "0.0%", "en-US")
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: cd904122-a5e7-40f6-811e-3859264a6078
+
+	measure 'Real Days Text' =
+			
+			FORMAT([Avg Real Shipping Days], "0.0", "en-US")
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: 1319445e-b4bf-4e06-8bf7-848f042c0e9f
+
+	measure 'Scheduled Days Text' =
+			
+			FORMAT([Avg Scheduled Shipping Days], "0.0", "en-US")
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: 8049481f-e1d1-4333-8b90-d066fbe29cea
+
+	measure 'Worst Shipping Mode Name' = ```
+			
+			VAR ModeGap = 
+			    ADDCOLUMNS(
+			        VALUES(Dim_Shipping[Shipping Mode]),
+			        "DayGap", [Avg Real Shipping Days] - [Avg Scheduled Shipping Days]
+			    )
+			RETURN
+			    MAXX(
+			        TOPN(1, ModeGap, [DayGap], DESC),
+			        Dim_Shipping[Shipping Mode]
+			    )
+			```
+		displayFolder: 05 Top N & Ranking
+		lineageTag: 2d3188ef-8114-4ba2-ae61-76b5bbde493a
+
+	measure 'Fraud Sales Text' = FORMAT([Fraud Sales] / 1000, "$#,##0.0K", "en-US")
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: a3f400c0-dcf7-460e-800b-bb8b435c2f39
+
+	measure 'Fraud Orders Text' = FORMAT([Fraud Orders Count] / 1000, "#,##0.0K", "en-US")
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: 0c81dbcf-9e99-49a0-9707-dcc3921d5ef8
+
+	measure 'Top Fraud Region 1' = TOPN(1, VALUES(Dim_Geography[Order Region]), [Fraud Orders Count], DESC)
+		displayFolder: 05 Top N & Ranking
+		lineageTag: ae5a655d-3f68-475d-8914-1cc0500850e5
+
+	measure 'Top Fraud Region 1 Count' =
+			
+			VAR TopR = [Top Fraud Region 1]
+			RETURN FORMAT(CALCULATE([Fraud Orders Count], Dim_Geography[Order Region] = TopR), "#,##0")
+		displayFolder: 05 Top N & Ranking
+		lineageTag: 64fd0312-930f-4ef1-8a99-2cf8273f73af
+
+	measure 'Top Fraud Region 2' = ```
+			
+			VAR Top2Table = 
+			    TOPN(2, VALUES(Dim_Geography[Order Region]), [Fraud Orders Count], DESC)
+			VAR Top1Table = 
+			    TOPN(1, VALUES(Dim_Geography[Order Region]), [Fraud Orders Count], DESC)
+			RETURN
+			    MAXX(
+			        EXCEPT(Top2Table, Top1Table),
+			        Dim_Geography[Order Region]
+			    )
+			```
+		displayFolder: 05 Top N & Ranking
+		lineageTag: 8066cf7e-928f-4ed6-8021-ff86988c64a5
+
+	measure 'Worst Mode Details Text' = ```
+			
+			VAR WorstMode = [Worst Shipping Mode Name]
+			VAR RealDays = 
+			    CALCULATE(
+			        [Avg Real Shipping Days], 
+			        Dim_Shipping[Shipping Mode] = WorstMode
+			    )
+			VAR SchedDays = 
+			    CALCULATE(
+			        [Avg Scheduled Shipping Days], 
+			        Dim_Shipping[Shipping Mode] = WorstMode
+			    )
+			RETURN
+			    WorstMode & " (actual ~" & FORMAT(RealDays, "0.0") & " days vs. " & FORMAT(SchedDays, "0.0") & "-day SLA)"
+			```
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: 64951a8e-7f28-45c8-8524-dda48af04dd5
+
+	measure 'Top Fraud Region 2 Count' = ```
+			
+			VAR Region2 = [Top Fraud Region 2]
+			RETURN
+			    FORMAT(
+			        CALCULATE([Fraud Orders Count], Dim_Geography[Order Region] = Region2), 
+			        "#,##0"
+			    )
+			```
+		displayFolder: 05 Top N & Ranking
+		lineageTag: ca7b4749-a716-4a31-9fd3-8f90e2f6e796
+
+	measure 'Top2 Fraud Share Pct Text' = ```
+			
+			VAR Top2Table = 
+			    TOPN(2, VALUES(Dim_Geography[Order Region]), [Fraud Orders Count], DESC)
+			VAR Top2Count = 
+			    CALCULATE(
+			        [Fraud Orders Count], 
+			        KEEPFILTERS(Top2Table)
+			    )
+			VAR TotalFraudOrders = 
+			    CALCULATE(
+			        [Fraud Orders Count], 
+			        ALLSELECTED(Dim_Geography[Order Region])
+			    )
+			RETURN
+			    FORMAT(DIVIDE(Top2Count, TotalFraudOrders), "0.0%", "en-US")
+			```
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: 4e88103d-679d-4615-be2a-f16a30a8eb00
+
+	measure 'Top1 Fraud Share Pct Text' = ```
+			
+			VAR TopReg = [Top Fraud Region 1]
+			VAR Top1Count = 
+			    CALCULATE(
+			        [Fraud Orders Count], 
+			        'Dim_Geography'[Order Region] = TopReg
+			    )
+			VAR TotalFilteredCount = 
+			    CALCULATE(
+			        [Fraud Orders Count], 
+			        ALLSELECTED('Dim_Geography'[Order Region])
+			    )
+			RETURN
+			    FORMAT(
+			        DIVIDE(Top1Count, TotalFilteredCount), 
+			        "0.0%", 
+			        "en-US"
+			    )
+			```
+		displayFolder: 03 Dynamic Text & KPI Labels
+		lineageTag: e7acbfff-d9f0-4a92-8320-8e099ae89013
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [column = _t]),
+				    #"Removed Columns" = Table.RemoveColumns(Source,{"column"})
+				in
+				  #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
