@@ -1,0 +1,95 @@
+table Dim_Products
+	lineageTag: 1df0f36a-7022-48db-89d8-e3a449297920
+
+	column product_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6095ebef-2035-472d-b79b-76a86ecae758
+		summarizeBy: none
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Name'
+		dataType: string
+		lineageTag: 0f7cd27f-ae2b-4c89-8c84-209ca1fabc5d
+		summarizeBy: none
+		sourceColumn: Product Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: dd1a9721-ca8a-4240-8e83-d3efc1009fd5
+		summarizeBy: none
+		sourceColumn: category_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Category Name'
+		dataType: string
+		lineageTag: 146a0dc9-90b9-45a4-a9cd-0d2be138ae1a
+		summarizeBy: none
+		sourceColumn: Category Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column department_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5f8b7ef9-b584-4364-a112-e2426155bba7
+		summarizeBy: none
+		sourceColumn: department_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Department Name'
+		dataType: string
+		lineageTag: 96cd6d13-b858-46ee-a5e8-2654ff9e3fdb
+		summarizeBy: none
+		sourceColumn: Department Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Product Price'
+		dataType: double
+		lineageTag: 4509298d-e614-4886-9dc7-a27ffdea3466
+		summarizeBy: none
+		sourceColumn: Product Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column product_image
+		dataType: string
+		lineageTag: 841948f7-12e5-4760-9088-84642ce12752
+		summarizeBy: none
+		sourceColumn: product_image
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Products = m
+		mode: import
+		source =
+				let
+				  Source = PostgreSQL.Database(DB_Server, DB_Name),
+				  #"Navigation 1" = Source{[Schema = "core", Item = "dim_products"]}[Data],
+				    #"Renamed Columns" = Table.RenameColumns(#"Navigation 1",{{"category_name", "Category Name"}, {"department_name", "Department Name"}, {"product_name", "Product Name"}, {"product_price", "Product Price"}})
+				in
+				  #"Renamed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
